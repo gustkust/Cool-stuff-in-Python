@@ -5,16 +5,16 @@ from random import randint
 
 
 # some variables
-SCREEN_WIDTH = 1234
-SCREEN_HEIGHT = 124
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 FPS = 60
 BACKGROUND_COLOR = (255, 255, 255)
 BALLS_COLOR = (0, 0, 0)
-BALLS_SIZE = 40
+BALLS_SIZE = 30
 # max number of balls formula, so they dont bug at the start is: SCREEN_WIDTH or SCREEN_HEIGHT / 1.5 BALL_SIZE - 1
 # there is also absolute max, so the program does not crush but it depends on BALLS_SIZE
 # for BALLS_SIZE 20 it is 66
-NUMBER_OF_BALLS = 3
+NUMBER_OF_BALLS = 10
 
 
 # ball class
