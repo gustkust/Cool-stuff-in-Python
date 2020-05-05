@@ -2,7 +2,7 @@
 import pygame
 from math import sqrt, floor
 from random import choice
-
+from time import sleep
 # comments in this file are kinda messy
 
 # some variables
@@ -12,14 +12,14 @@ FPS = 60
 BACKGROUND_COLOR = (255, 255, 255)
 BALLS_COLOR = (0, 0, 0)
 BALLS_SIZE = 35
-NUMBER_OF_BALLS = 1
+NUMBER_OF_BALLS = 10
 BALLS_SPEED = 1
 STOP_TIME = 1000
 PINK = (211, 23, 142)
 PINK_LAUNCH_TIME = 1
 PINK_SPEED = 5
 PLAYER_SIZE = 20
-COLLISION_HELPER = 7
+COLLISION_HELPER = 2
 
 
 # ball class
@@ -34,9 +34,6 @@ class Ball:
         self.color = color
 
     def draw(self):
-        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
-
-    def draw_player(self):
         pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius + COLLISION_HELPER)
 
 
@@ -154,98 +151,131 @@ def move(ball):
 
 
 def move_player(ball):
-    if ball.x >= SCREEN_WIDTH - player.radius - COLLISION_HELPER:
-        ball.x = SCREEN_WIDTH - player.radius - COLLISION_HELPER - 1
-    if ball.x <= player.radius + COLLISION_HELPER:
-        ball.x = player.radius + COLLISION_HELPER + 1
-    if ball.y >= SCREEN_HEIGHT - player.radius - 4:
-        ball.y = SCREEN_HEIGHT - player.radius - COLLISION_HELPER - 1
-    if ball.y <= player.radius + COLLISION_HELPER:
-        ball.y = player.radius + COLLISION_HELPER + 1
-    player.x += player.x_speed
-    player.y += player.y_speed
+    if ball.x >= SCREEN_WIDTH - PLAYER_SIZE - COLLISION_HELPER:
+        ball.x = SCREEN_WIDTH - PLAYER_SIZE - COLLISION_HELPER - 1
+    if ball.x <= PLAYER_SIZE + COLLISION_HELPER:
+        ball.x = PLAYER_SIZE + COLLISION_HELPER + 1
+    if ball.y >= SCREEN_HEIGHT - PLAYER_SIZE - 4:
+        ball.y = SCREEN_HEIGHT - PLAYER_SIZE - COLLISION_HELPER - 1
+    if ball.y <= PLAYER_SIZE + COLLISION_HELPER:
+        ball.y = PLAYER_SIZE + COLLISION_HELPER + 1
+    ball.x += ball.x_speed
+    ball.y += ball.y_speed
 
 
 # writes prompt and creates screen and clock
 print('\nHello! This program is simple game with perfect elastic ball collisions.')
 print('\nAll collision formulas based on article by Chad Berchek "2-Dimensional Elastic Collisions without Trigonometry".')
-print('http://www.vobarian.com/collisions/\n')
+print('http://www.vobarian.com/collisions/')
 # On one time unit every ball travels thought as many pixels as their speed says
 # It is possible to add masses to this simulation, there is placeholder for it in formulas
+
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
+pygame.font.init()
 
-# creating circles
-balls = []
-count = 0
-while count < NUMBER_OF_BALLS:
-    for i in range(floor(SCREEN_HEIGHT / (2.5 * BALLS_SIZE))):
-        for j in range(floor(SCREEN_WIDTH / (2.5 * BALLS_SIZE))):
-            balls.append(Ball(2.5 * BALLS_SIZE + j * 2.5 * BALLS_SIZE, 2.5 * BALLS_SIZE + i * 2.5 * BALLS_SIZE, choice([-BALLS_SPEED, BALLS_SPEED]), choice([-BALLS_SPEED, BALLS_SPEED]), BALLS_SIZE, BALLS_COLOR))
-            count += 1
+
+def game(best_score):
+    end = False
+    if best_score == 0:
+        print('\nGame starts in:')
+        print('3')
+        sleep(1)
+        print('2')
+        sleep(1)
+        print('1\n')
+        sleep(1)
+    # creating circles
+    balls = []
+    count = 0
+    while count < NUMBER_OF_BALLS:
+        for i in range(floor(SCREEN_HEIGHT / (2.5 * BALLS_SIZE))):
+            for j in range(floor(SCREEN_WIDTH / (2.5 * BALLS_SIZE))):
+                balls.append(Ball(2.5 * BALLS_SIZE + j * 2.5 * BALLS_SIZE, 2.5 * BALLS_SIZE + i * 2.5 * BALLS_SIZE, choice([-BALLS_SPEED, BALLS_SPEED]), choice([-BALLS_SPEED, BALLS_SPEED]), BALLS_SIZE, BALLS_COLOR))
+                count += 1
+                if count == NUMBER_OF_BALLS:
+                    break
             if count == NUMBER_OF_BALLS:
                 break
-        if count == NUMBER_OF_BALLS:
-            break
 
-# main loop
-time = 0
-player = Ball(SCREEN_WIDTH/2, SCREEN_HEIGHT - 3 * BALLS_SIZE, 0, 0, PLAYER_SIZE, PINK)
-while True:
-    time += 1
-    # checks if user wants to close the screen
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            keys = pygame.key.get_pressed()
-            if event.key == pygame.K_w:
-                player.y_speed -= PINK_SPEED
-            elif event.key == pygame.K_s:
-                player.y_speed += PINK_SPEED
-            elif event.key == pygame.K_a:
-                player.x_speed -= PINK_SPEED
-            elif event.key == pygame.K_d:
-                player.x_speed += PINK_SPEED
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_w:
-                player.y_speed += PINK_SPEED
-            elif event.key == pygame.K_s:
-                player.y_speed -= PINK_SPEED
-            elif event.key == pygame.K_a:
-                player.x_speed += PINK_SPEED
-            elif event.key == pygame.K_d:
-                player.x_speed -= PINK_SPEED
-        elif event.type == pygame.QUIT:
-            exit(0)
-    # moves balls and checks if any circle hit the wall
-    move_player(player)
-    for element in balls:
-        move(element)
-    # checks for collisions between balls
-    for ball1_index in range(0, len(balls)):
-        if collision_check(balls[ball1_index], player):
-            print('~~GAME OVER~~\nYour score:', time)
-            exit(0)
-        for ball2_index in range(ball1_index + 1, len(balls)):
-            if collision_check(balls[ball1_index], balls[ball2_index]):
-                balls[ball1_index], balls[ball2_index] = collision(balls[ball1_index], balls[ball2_index])
-                # breaks the second for loop, so the balls wont stuck into each other
-                break
-    # drawing stuff
-    screen.fill(BACKGROUND_COLOR)
-    for element in balls:
-        element.draw()
-    player.draw_player()
-    pygame.display.flip()
-    caption = 'Current score: ' + str(time)
-    pygame.display.set_caption(caption)
-    clock.tick(FPS)
-    for ball in balls:
-        if ball.x_speed > 0:
-            ball.x_speed += 0.005
-        else:
-            ball.x_speed -= 0.005
-        if ball.y_speed > 0:
-            ball.y_speed += 0.005
-        else:
-            ball.y_speed -= 0.005
+    # main loop
+    score = 0
+    player = Ball(SCREEN_WIDTH/2, SCREEN_HEIGHT - 3 * BALLS_SIZE, 0, 0, PLAYER_SIZE, PINK)
+    while True:
+        score += 1
+        # checks if user wants to close the screen
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and score != 1:
+                if event.key == pygame.K_w:
+                    player.y_speed -= PINK_SPEED
+                elif event.key == pygame.K_s:
+                    player.y_speed += PINK_SPEED
+                elif event.key == pygame.K_a:
+                    player.x_speed -= PINK_SPEED
+                elif event.key == pygame.K_d:
+                    player.x_speed += PINK_SPEED
+                elif event.key == pygame.K_r:
+                    game(best_score)
+            elif event.type == pygame.KEYUP and score != 1:
+                if event.key == pygame.K_w:
+                    player.y_speed += PINK_SPEED
+                elif event.key == pygame.K_s:
+                    player.y_speed -= PINK_SPEED
+                elif event.key == pygame.K_a:
+                    player.x_speed += PINK_SPEED
+                elif event.key == pygame.K_d:
+                    player.x_speed -= PINK_SPEED
+            elif event.type == pygame.QUIT:
+                print('Thanks for playing!')
+                exit(0)
+        # moves balls and checks if any circle hit the wall
+        move_player(player)
+        for element in balls:
+            move(element)
+        # checks for collisions between balls
+        for ball1_index in range(0, len(balls)):
+            if collision_check(balls[ball1_index], player) and not end:
+                screen.fill(BACKGROUND_COLOR)
+                pygame.display.flip()
+                if score > best_score:
+                    caption = 'Current score: ' + str(score) + ' Best score: ' + str(score)
+                else:
+                    caption = 'Current score: ' + str(score) + ' Best score: ' + str(best_score)
+                pygame.display.set_caption(caption)
+                print('~~GAME OVER~~\nYour score:', score)
+                if score > best_score:
+                    best_score = score
+                    print('Congratulations! Its your new best score!')
+                print('Press R to restart.\n')
+                end = True
+            for ball2_index in range(ball1_index + 1, len(balls)):
+                if collision_check(balls[ball1_index], balls[ball2_index]):
+                    balls[ball1_index], balls[ball2_index] = collision(balls[ball1_index], balls[ball2_index])
+                    # breaks the second for loop, so the balls wont stuck into each other
+                    break
+        if not end:
+            # drawing stuff
+            screen.fill(BACKGROUND_COLOR)
+            for element in balls:
+                element.draw()
+            player.draw()
+            pygame.display.flip()
+            if score > best_score:
+                caption = 'Current score: ' + str(score) + ' Best score: ' + str(score)
+            else:
+                caption = 'Current score: ' + str(score) + ' Best score: ' + str(best_score)
+            pygame.display.set_caption(caption)
+            clock.tick(FPS)
+            for ball in balls:
+                if ball.x_speed > 0:
+                    ball.x_speed += 0.005
+                else:
+                    ball.x_speed -= 0.005
+                if ball.y_speed > 0:
+                    ball.y_speed += 0.005
+                else:
+                    ball.y_speed -= 0.005
+
+
+game(0)
