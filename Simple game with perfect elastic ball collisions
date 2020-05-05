@@ -3,19 +3,19 @@ import pygame
 from math import sqrt, floor
 from random import choice
 from time import sleep
-# comments in this file are kinda messy
+# comments in this file are focused on collisions, not game loop
 
-# some variables
+# some variables and constants
 SCREEN_WIDTH = 720
 SCREEN_HEIGHT = 720
 FPS = 60
-BACKGROUND_COLOR = (255, 255, 255)
-BALLS_COLOR = (0, 0, 0)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 BALLS_SIZE = 35
 NUMBER_OF_BALLS = 10
 BALLS_SPEED = 1
 STOP_TIME = 1000
-PINK = (211, 23, 142)
+PINK = (255, 0, 0)
 PINK_LAUNCH_TIME = 1
 PINK_SPEED = 5
 PLAYER_SIZE = 20
@@ -151,6 +151,7 @@ def move(ball):
 
 
 def move_player(ball):
+    # checking for wall collision
     if ball.x >= SCREEN_WIDTH - PLAYER_SIZE - COLLISION_HELPER:
         ball.x = SCREEN_WIDTH - PLAYER_SIZE - COLLISION_HELPER - 1
     if ball.x <= PLAYER_SIZE + COLLISION_HELPER:
@@ -159,105 +160,100 @@ def move_player(ball):
         ball.y = SCREEN_HEIGHT - PLAYER_SIZE - COLLISION_HELPER - 1
     if ball.y <= PLAYER_SIZE + COLLISION_HELPER:
         ball.y = PLAYER_SIZE + COLLISION_HELPER + 1
+    # moving player
     ball.x += ball.x_speed
     ball.y += ball.y_speed
 
 
-# writes prompt and creates screen and clock
-print('\nHello! This program is simple game with perfect elastic ball collisions.')
-print('\nAll collision formulas based on article by Chad Berchek "2-Dimensional Elastic Collisions without Trigonometry".')
-print('http://www.vobarian.com/collisions/')
-# On one time unit every ball travels thought as many pixels as their speed says
-# It is possible to add masses to this simulation, there is placeholder for it in formulas
-
-pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-clock = pygame.time.Clock()
-pygame.font.init()
-
-
 def game(best_score):
+    was_w = False
+    was_s = False
+    was_a = False
+    was_d = False
     end = False
-    # creating circles
     balls = []
     count = 0
     while count < NUMBER_OF_BALLS:
         for i in range(floor(SCREEN_HEIGHT / (2.5 * BALLS_SIZE))):
             for j in range(floor(SCREEN_WIDTH / (2.5 * BALLS_SIZE))):
-                balls.append(Ball(2.5 * BALLS_SIZE + j * 2.5 * BALLS_SIZE, 2.5 * BALLS_SIZE + i * 2.5 * BALLS_SIZE, choice([-BALLS_SPEED, BALLS_SPEED]), choice([-BALLS_SPEED, BALLS_SPEED]), BALLS_SIZE, BALLS_COLOR))
+                balls.append(Ball(2.5 * BALLS_SIZE + j * 2.5 * BALLS_SIZE, 2.5 * BALLS_SIZE + i * 2.5 * BALLS_SIZE, choice([-BALLS_SPEED, BALLS_SPEED]), choice([-BALLS_SPEED, BALLS_SPEED]), BALLS_SIZE, BLACK))
                 count += 1
                 if count == NUMBER_OF_BALLS:
                     break
             if count == NUMBER_OF_BALLS:
                 break
-    # main loop
     score = 0
     player = Ball(SCREEN_WIDTH/2, SCREEN_HEIGHT - 3 * BALLS_SIZE, 0, 0, PLAYER_SIZE, PINK)
     player.x_speed = 0
     player.y_speed = 0
     while True:
         score += 1
-        # checks if user wants to close the screen
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and score != 1:
                 if event.key == pygame.K_r:
                     game(best_score)
                 elif event.key == pygame.K_w or event.key == pygame.K_UP:
                     player.y_speed -= PINK_SPEED
+                    was_w = True
                 elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     player.y_speed += PINK_SPEED
+                    was_s = True
                 elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     player.x_speed -= PINK_SPEED
+                    was_a = True
                 elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     player.x_speed += PINK_SPEED
+                    was_d = True
             elif event.type == pygame.KEYUP and score != 1:
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                if (event.key == pygame.K_w or event.key == pygame.K_UP) and was_w:
                     player.y_speed += PINK_SPEED
-                elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                elif (event.key == pygame.K_s or event.key == pygame.K_DOWN) and was_s:
                     player.y_speed -= PINK_SPEED
-                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                elif (event.key == pygame.K_a or event.key == pygame.K_LEFT) and was_a:
                     player.x_speed += PINK_SPEED
-                elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                elif (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and was_d:
                     player.x_speed -= PINK_SPEED
             elif event.type == pygame.QUIT:
                 print('Thanks for playing!')
+                best_score_file_write = open('best_score.txt', 'w')
+                best_score_file_write.write(str(best_score))
+                best_score_file_write.close()
                 exit(0)
-        # moves balls and checks if any circle hit the wall
         move_player(player)
         for element in balls:
             move(element)
-        # checks for collisions between balls
         for ball1_index in range(0, len(balls)):
             if collision_check(balls[ball1_index], player) and not end:
-                screen.fill(BACKGROUND_COLOR)
+                screen.fill(BLACK)
                 pygame.display.flip()
                 if score > best_score:
-                    caption = 'Current score: ' + str(score) + ' Best score: ' + str(score)
+                    caption = 'Falcon and Asteroids    Current score: ' + str(score) + '     Best score: ' + str(score) + '     ~~GAME OVER~~     Press R to restart.'
                 else:
-                    caption = 'Current score: ' + str(score) + ' Best score: ' + str(best_score)
+                    caption = 'Falcon and Asteroids    Current score: ' + str(score) + '     Best score: ' + str(best_score) + '     ~~GAME OVER~~     Press R to restart.'
                 pygame.display.set_caption(caption)
                 print('~~GAME OVER~~\nYour score:', score)
                 if score > best_score:
                     best_score = score
                     print('Congratulations! Its your new best score!')
-                print('Press only (!!!) R to restart.\n')
+                print('Press R to restart.\n')
                 end = True
             for ball2_index in range(ball1_index + 1, len(balls)):
                 if collision_check(balls[ball1_index], balls[ball2_index]):
                     balls[ball1_index], balls[ball2_index] = collision(balls[ball1_index], balls[ball2_index])
-                    # breaks the second for loop, so the balls wont stuck into each other
                     break
         if not end:
-            # drawing stuff
-            screen.fill(BACKGROUND_COLOR)
+            screen.fill(BLACK)
+            screen.blit(background_sprite, (0, 0))
             for element in balls:
                 element.draw()
+                screen.blit(enemy_sprite, (element.x - BALLS_SIZE - COLLISION_HELPER, element.y - BALLS_SIZE - COLLISION_HELPER))
             player.draw()
+            screen.blit(player_sprite, (player.x - PLAYER_SIZE - COLLISION_HELPER, player.y - PLAYER_SIZE - COLLISION_HELPER))
             pygame.display.flip()
             if score > best_score:
-                caption = 'Current score: ' + str(score) + ' Best score: ' + str(score)
+                caption = 'Falcon and Asteroids    Current score: ' + str(score) + '     Best score: ' + str(score)
             else:
-                caption = 'Current score: ' + str(score) + ' Best score: ' + str(best_score)
+                caption = 'Falcon and Asteroids    Current score: ' + str(score) + '     Best score: ' + str(best_score)
             pygame.display.set_caption(caption)
             clock.tick(FPS)
             for ball in balls:
@@ -271,6 +267,23 @@ def game(best_score):
                     ball.y_speed -= 0.005
 
 
+print('\nHello! This program is simple game with perfect elastic ball collisions.')
+print('\nAll collision formulas based on article by Chad Berchek "2-Dimensional Elastic Collisions without Trigonometry".')
+print('http://www.vobarian.com/collisions/')
+# On one time unit every ball travels thought as many pixels as their speed says
+# It is possible to add masses to this simulation, there is placeholder for it in formulas
+
+pygame.init()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pygame.time.Clock()
+pygame.font.init()
+player_sprite = pygame.image.load('player_sprite.png')
+background_sprite = pygame.image.load('background_sprite.png')
+enemy_sprite = pygame.image.load('enemy_sprite.png')
+best_score_file_read = open('best_score.txt', 'r')
+start_score = int(best_score_file_read.read())
+best_score_file_read.close()
+
 print('\nGame starts in:')
 print('3')
 sleep(1)
@@ -278,4 +291,4 @@ print('2')
 sleep(1)
 print('1\n')
 sleep(1)
-game(0)
+game(start_score)
