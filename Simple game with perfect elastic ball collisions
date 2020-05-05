@@ -178,14 +178,6 @@ pygame.font.init()
 
 def game(best_score):
     end = False
-    if best_score == 0:
-        print('\nGame starts in:')
-        print('3')
-        sleep(1)
-        print('2')
-        sleep(1)
-        print('1\n')
-        sleep(1)
     # creating circles
     balls = []
     count = 0
@@ -198,16 +190,19 @@ def game(best_score):
                     break
             if count == NUMBER_OF_BALLS:
                 break
-
     # main loop
     score = 0
     player = Ball(SCREEN_WIDTH/2, SCREEN_HEIGHT - 3 * BALLS_SIZE, 0, 0, PLAYER_SIZE, PINK)
+    player.x_speed = 0
+    player.y_speed = 0
     while True:
         score += 1
         # checks if user wants to close the screen
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and score != 1:
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                if event.key == pygame.K_r:
+                    game(best_score)
+                elif event.key == pygame.K_w or event.key == pygame.K_UP:
                     player.y_speed -= PINK_SPEED
                 elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     player.y_speed += PINK_SPEED
@@ -215,8 +210,6 @@ def game(best_score):
                     player.x_speed -= PINK_SPEED
                 elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     player.x_speed += PINK_SPEED
-                elif event.key == pygame.K_r:
-                    game(best_score)
             elif event.type == pygame.KEYUP and score != 1:
                 if event.key == pygame.K_w or event.key == pygame.K_UP:
                     player.y_speed += PINK_SPEED
@@ -247,7 +240,7 @@ def game(best_score):
                 if score > best_score:
                     best_score = score
                     print('Congratulations! Its your new best score!')
-                print('Press R to restart.\n')
+                print('Press only (!!!) R to restart.\n')
                 end = True
             for ball2_index in range(ball1_index + 1, len(balls)):
                 if collision_check(balls[ball1_index], balls[ball2_index]):
@@ -278,4 +271,11 @@ def game(best_score):
                     ball.y_speed -= 0.005
 
 
+print('\nGame starts in:')
+print('3')
+sleep(1)
+print('2')
+sleep(1)
+print('1\n')
+sleep(1)
 game(0)
