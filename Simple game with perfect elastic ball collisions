@@ -12,8 +12,8 @@ FPS = 60
 BACKGROUND_COLOR = (255, 255, 255)
 BALLS_COLOR = (0, 0, 0)
 BALLS_SIZE = 35
-NUMBER_OF_BALLS = 10
-BALLS_SPEED = 3
+NUMBER_OF_BALLS = 1
+BALLS_SPEED = 1
 STOP_TIME = 1000
 PINK = (211, 23, 142)
 PINK_LAUNCH_TIME = 1
@@ -240,3 +240,12 @@ while True:
     caption = 'Current score: ' + str(time)
     pygame.display.set_caption(caption)
     clock.tick(FPS)
+    for ball in balls:
+        if ball.x_speed > 0:
+            ball.x_speed += 0.005
+        else:
+            ball.x_speed -= 0.005
+        if ball.y_speed > 0:
+            ball.y_speed += 0.005
+        else:
+            ball.y_speed -= 0.005
