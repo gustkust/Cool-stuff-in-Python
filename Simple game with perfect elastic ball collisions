@@ -207,24 +207,24 @@ def game(best_score):
         # checks if user wants to close the screen
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and score != 1:
-                if event.key == pygame.K_w:
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
                     player.y_speed -= PINK_SPEED
-                elif event.key == pygame.K_s:
+                elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     player.y_speed += PINK_SPEED
-                elif event.key == pygame.K_a:
+                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     player.x_speed -= PINK_SPEED
-                elif event.key == pygame.K_d:
+                elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     player.x_speed += PINK_SPEED
                 elif event.key == pygame.K_r:
                     game(best_score)
             elif event.type == pygame.KEYUP and score != 1:
-                if event.key == pygame.K_w:
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
                     player.y_speed += PINK_SPEED
-                elif event.key == pygame.K_s:
+                elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     player.y_speed -= PINK_SPEED
-                elif event.key == pygame.K_a:
+                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     player.x_speed += PINK_SPEED
-                elif event.key == pygame.K_d:
+                elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     player.x_speed -= PINK_SPEED
             elif event.type == pygame.QUIT:
                 print('Thanks for playing!')
